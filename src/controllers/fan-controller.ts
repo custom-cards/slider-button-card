@@ -29,7 +29,7 @@ export class FanController extends Controller {
   }
 
   get _step(): number {
-    return this.stateObj.attributes.percentage_step;
+    return this.hasSlider ? this.stateObj.attributes.percentage_step : 1;
   }
 
   get label(): string {
@@ -44,7 +44,7 @@ export class FanController extends Controller {
   }
 
   get hasSlider(): boolean {
-    return 'percentage' in this.stateObj.attributes;
+    return 'speed' in this.stateObj.attributes;
   }
 
   get _max(): number {
