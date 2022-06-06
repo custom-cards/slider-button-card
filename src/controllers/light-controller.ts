@@ -13,6 +13,10 @@ export class LightController extends Controller {
   _step = 1;
   _targetValue;
   _invert = false;
+  _clickPosition;
+  _clickPositionLock;
+  _originalValue;
+  _originalValueLock;
 
   get attribute(): string {
     const attr = this._config.slider?.attribute as LightAttributes;
@@ -210,7 +214,7 @@ export class LightController extends Controller {
     if (supported.length === 1 && supported[0] === LightAttributes.ON_OFF) {
       return true;
     }
-    return this._config.slider?.toggle_on_click ?? false;
+    return this._config.slider?.disable_sliding ?? false;
   }
 
   get hasSlider(): boolean {

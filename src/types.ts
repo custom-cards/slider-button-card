@@ -11,9 +11,11 @@ declare global {
 export interface SliderButtonCardConfig extends LovelaceCardConfig {
   type: string;
   entity: string;
+  attribute?: string;
   name?: string;
   show_name?: boolean;
   show_state?: boolean;
+  show_attribute?: boolean;
   icon?: IconConfig;
   action_button?: ActionButtonConfig;
   slider?: SliderConfig;
@@ -47,9 +49,10 @@ export interface SliderConfig {
   use_percentage_bg_opacity?: boolean;
   use_state_color?: boolean;
   show_track?: boolean;
-  toggle_on_click?: boolean;
+  disable_sliding?: boolean
   invert?: boolean;
   force_square: boolean;
+  tap_action?: ActionConfig;
 }
 
 export enum ActionButtonMode {
@@ -77,9 +80,14 @@ export enum Domain {
   FAN = 'fan',
   COVER = 'cover',
   INPUT_BOOLEAN = 'input_boolean',
+  INPUT_NUMBER = 'input_number',
   MEDIA_PLAYER = 'media_player',
   CLIMATE = 'climate',
   LOCK = 'lock',
+  AUTOMATION = 'automation',
+  SENSOR = 'sensor',
+  BINARY_SENSOR = 'binary_sensor',
+  SCRIPT = 'script',
 }
 
 export const ActionButtonConfigDefault: ActionButtonConfig = {
@@ -106,8 +114,11 @@ export const SliderConfigDefault: SliderConfig = {
   use_percentage_bg_opacity: false,
   use_state_color: false,
   show_track: false,
-  toggle_on_click: false,
+  disable_sliding: false,
   force_square: false,
+  tap_action: {
+    action: 'toggle'
+  },
 };
 
 export const SliderConfigDefaultDomain: Map<string, SliderConfig> = new Map([
@@ -117,8 +128,12 @@ export const SliderConfigDefaultDomain: Map<string, SliderConfig> = new Map([
     use_state_color: true,
     use_percentage_bg_opacity: false,
     show_track: false,
-    toggle_on_click: false,
+    disable_sliding: false,
     force_square: false,
+    show_attribute: false,
+    tap_action: {
+      action: 'toggle'
+    },
   }],
   [Domain.FAN, {
     direction: SliderDirections.LEFT_RIGHT,
@@ -126,8 +141,12 @@ export const SliderConfigDefaultDomain: Map<string, SliderConfig> = new Map([
     use_state_color: false,
     use_percentage_bg_opacity: false,
     show_track: false,
-    toggle_on_click: false,
+    disable_sliding: false,
     force_square: false,
+    show_attribute: false,
+    tap_action: {
+      action: 'toggle'
+    },
   }],
   [Domain.SWITCH, {
     direction: SliderDirections.LEFT_RIGHT,
@@ -135,18 +154,39 @@ export const SliderConfigDefaultDomain: Map<string, SliderConfig> = new Map([
     use_state_color: false,
     use_percentage_bg_opacity: false,
     show_track: false,
-    toggle_on_click: true,
+    disable_sliding: true,
     force_square: false,
+    show_attribute: false,
+    tap_action: {
+      action: 'toggle'
+    },
+  }],
+  [Domain.AUTOMATION, {
+    direction: SliderDirections.LEFT_RIGHT,
+    background: SliderBackground.SOLID,
+    use_state_color: false,
+    use_percentage_bg_opacity: false,
+    show_track: false,
+    disable_sliding: true,
+    force_square: false,
+    show_attribute: false,
+    tap_action: {
+      action: 'toggle'
+    },
   }],
   [Domain.COVER, {
     direction: SliderDirections.TOP_BOTTOM,
     background: SliderBackground.STRIPED,
     use_state_color: false,
     use_percentage_bg_opacity: false,
-    toggle_on_click: false,
+    disable_sliding: false,
     show_track: false,
     force_square: false,
     invert: true,
+    show_attribute: false,
+    tap_action: {
+      action: 'toggle'
+    },
   }],
   [Domain.INPUT_BOOLEAN, {
     direction: SliderDirections.LEFT_RIGHT,
@@ -154,8 +194,25 @@ export const SliderConfigDefaultDomain: Map<string, SliderConfig> = new Map([
     use_state_color: false,
     use_percentage_bg_opacity: false,
     show_track: false,
-    toggle_on_click: true,
+    disable_sliding: false,
     force_square: false,
+    show_attribute: false,
+    tap_action: {
+      action: 'toggle'
+    },
+  }],
+  [Domain.INPUT_NUMBER, {
+    direction: SliderDirections.LEFT_RIGHT,
+    background: SliderBackground.SOLID,
+    use_state_color: false,
+    use_percentage_bg_opacity: false,
+    show_track: false,
+    disable_sliding: false,
+    force_square: false,
+    show_attribute: false,
+    tap_action: {
+      action: 'more-info'
+    },
   }],
   [Domain.MEDIA_PLAYER, {
     direction: SliderDirections.LEFT_RIGHT,
@@ -163,8 +220,13 @@ export const SliderConfigDefaultDomain: Map<string, SliderConfig> = new Map([
     use_state_color: false,
     use_percentage_bg_opacity: false,
     show_track: true,
-    toggle_on_click: false,
+    disable_sliding: false,
     force_square: false,
+    show_attribute: true,
+    attribute: "media_title",
+    tap_action: {
+      action: 'more-info'
+    },
   }],
   [Domain.LOCK, {
     direction: SliderDirections.LEFT_RIGHT,
@@ -172,8 +234,12 @@ export const SliderConfigDefaultDomain: Map<string, SliderConfig> = new Map([
     use_state_color: false,
     use_percentage_bg_opacity: false,
     show_track: false,
-    toggle_on_click: true,
+    disable_sliding: true,
     force_square: false,
+    show_attribute: false,
+    tap_action: {
+      action: 'toggle'
+    },
   }],
   [Domain.CLIMATE, {
     direction: SliderDirections.LEFT_RIGHT,
@@ -181,8 +247,48 @@ export const SliderConfigDefaultDomain: Map<string, SliderConfig> = new Map([
     use_state_color: false,
     use_percentage_bg_opacity: false,
     show_track: true,
-    toggle_on_click: false,
+    disable_sliding: false,
     force_square: false,
+    show_attribute: "current_temperature",
+    tap_action: {
+      action: 'more-info'
+    },
+  }],
+  [Domain.SENSOR, {
+    direction: SliderDirections.LEFT_RIGHT,
+    background: SliderBackground.SOLID,
+    use_state_color: false,
+    use_percentage_bg_opacity: false,
+    show_track: false,
+    disable_sliding: true,
+    force_square: false,
+    tap_action: {
+      action: 'more-info'
+    },
+  }],
+  [Domain.BINARY_SENSOR, {
+    direction: SliderDirections.LEFT_RIGHT,
+    background: SliderBackground.SOLID,
+    use_state_color: false,
+    use_percentage_bg_opacity: false,
+    show_track: false,
+    disable_sliding: true,
+    force_square: false,
+    tap_action: {
+      action: 'more-info'
+    },
+  }],
+  [Domain.SCRIPT, {
+    direction: SliderDirections.LEFT_RIGHT,
+    background: SliderBackground.SOLID,
+    use_state_color: false,
+    use_percentage_bg_opacity: false,
+    show_track: false,
+    disable_sliding: true,
+    force_square: false,
+    tap_action: {
+      action: 'more-info'
+    },
   }],
 ]);
 

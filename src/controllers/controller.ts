@@ -20,6 +20,10 @@ export abstract class Controller {
   _sliderPrevColor = '';
 
   abstract _value?: number;
+  abstract _originalValue?: number;
+  abstract _originalValueLock?: boolean;
+  abstract _clickPosition?: number;
+  abstract _clickPositionLock?: boolean;
   abstract _targetValue?: number;
   abstract _min?: number;
   abstract _max?: number;
@@ -67,6 +71,58 @@ export abstract class Controller {
     }
   }
 
+  set originalValue(value: number) {
+    this._originalValue = value;
+  }
+
+  get originalValue(): number {
+    //return this.originalValue;
+    if (this._originalValue === 0) {
+      return 0;
+    }
+    if (this._originalValue) {
+      return Math.round(this._originalValue / this.step) * this.step;
+    }
+    return 0;
+  }
+
+  get originalValueLock(): boolean {
+    if (this._originalValueLock == true) {
+      return true;
+    }
+    return false;
+  }
+
+  set originalValueLock(lock: boolean) {
+    this._originalValueLock = lock;
+  }
+
+  set clickPosition(value: number) {
+    this._clickPosition = value;
+  }
+
+  get clickPosition(): number {
+    //return this.clickPosition;
+    if (this._clickPosition === 0) {
+      return 0;
+    }
+    if (this._clickPosition) {
+      return Math.round(this._clickPosition / this.step) * this.step;
+    }
+    return 0;
+  }
+
+  get clickPositionLock(): boolean {
+    if (this._clickPositionLock == true) {
+      return true;
+    }
+    return false;
+  }
+
+  set clickPositionLock(lock: boolean) {
+    this._clickPositionLock = lock;
+  }
+
   get targetValue(): number {
     if (this._targetValue === 0) {
       return 0;
@@ -91,6 +147,13 @@ export abstract class Controller {
     return `${this.targetValue}`;
   }
 
+  get attributeLabel(): string {
+    if (this._config.attribute) {
+      return this.stateObj.attributes[this._config.attribute];
+    }
+    return '';
+  }
+
   get hidden(): boolean {
     return false;
   }
@@ -99,8 +162,8 @@ export abstract class Controller {
     return true;
   }
 
-  get hasToggle(): boolean {
-    return this._config.slider?.toggle_on_click ?? false;
+  get disableSliding(): boolean {
+    return this._config.slider?.disable_sliding ?? false;
   }
 
   get toggleValue(): number {
@@ -120,7 +183,7 @@ export abstract class Controller {
   }
 
   get isSliderDisabled(): boolean {
-    return this.isUnavailable ? this.isUnavailable : this.hasToggle;
+    return this.isUnavailable ? this.isUnavailable : this.disableSliding;
   }
 
   get min(): number {
@@ -236,7 +299,7 @@ export abstract class Controller {
   moveSlider(event: any, {left, top, width, height}): number {
     let percentage = this.calcMovementPercentage(event, {left, top, width, height});
     percentage = this.applyStep(percentage);
-    percentage = normalize(percentage, 0, 100);
+    //percentage = normalize(percentage, 0, 100);
     if (!this.isValuePercentage) {
       percentage = percentageToValue(percentage, this.min, this.max);
     }

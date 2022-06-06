@@ -1,14 +1,19 @@
 import { computeDomain } from 'custom-card-helpers';
 import { Domain, SliderButtonCardConfig } from '../types';
+import { AutomationController } from './automation-controller';
 import { ClimateController } from './climate-controller';
 import { Controller } from './controller';
 import { CoverController } from './cover-controller';
 import { FanController } from './fan-controller';
 import { InputBooleanController } from './input-boolean-controller';
+import { InputNumberController } from './input-number-controller';
 import { LightController } from './light-controller';
 import { LockController } from './lock-controller';
 import { MediaController } from './media-controller';
 import { SwitchController } from './switch-controller';
+import { SensorController } from './sensor-controller';
+import { BinarySensorController } from './binary-sensor-controller';
+import { ScriptController } from './script-controller';
 
 export class ControllerFactory {
   static getInstance(config: SliderButtonCardConfig): Controller {
@@ -17,11 +22,16 @@ export class ControllerFactory {
       [Domain.LIGHT]: LightController,
       [Domain.FAN]: FanController,
       [Domain.SWITCH]: SwitchController,
+      [Domain.AUTOMATION]: AutomationController,
       [Domain.COVER]: CoverController,
       [Domain.INPUT_BOOLEAN]: InputBooleanController,
+      [Domain.INPUT_NUMBER]: InputNumberController,
       [Domain.MEDIA_PLAYER]: MediaController,
       [Domain.CLIMATE]: ClimateController,
       [Domain.LOCK]: LockController,
+      [Domain.SENSOR]: SensorController,
+      [Domain.BINARY_SENSOR]: BinarySensorController,
+      [Domain.SCRIPT]: ScriptController,
     };
     if (typeof mapping[domain] === 'undefined') {
       throw new Error(`Unsupported entity type: ${domain}`)

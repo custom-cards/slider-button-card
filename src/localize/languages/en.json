@@ -9,9 +9,11 @@
     "general": {
       "title": "General",
       "entity": "Entity (Required)",
+      "attribute": "Attribute (Optional)",
       "name": "Name (Optional)",
       "show_name": "Show name?",
       "show_state": "Show state?",
+      "show_attribute": "Show attribute?",
       "compact": "Compact?"
     },
     "icon": {
@@ -27,8 +29,9 @@
       "background": "Background",
       "use_brightness": "Use brightness?",
       "show_track": "Show track?",
-      "toggle_on_click": "Act as a toggle (disable sliding)",
-      "force_square": "Force square?"
+      "disable_sliding": "Disable Sliding",
+      "force_square": "Force square?",
+      "tap_action": "Tap Action"
     },
     "action_button": {
       "title": "Action button",

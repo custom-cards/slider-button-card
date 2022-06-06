@@ -14,7 +14,7 @@ import { localize } from './localize/localize';
 
 import type { SliderButtonCardConfig } from './types';
 import { ActionButtonConfigDefault, ActionButtonMode, IconConfigDefault } from './types';
-import { getSliderDefaultForEntity } from './utils';
+import { getSliderDefaultForEntity, normalize } from './utils';
 
 /* eslint no-console: 0 */
 console.info(
@@ -158,16 +158,19 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
                data-show-track="${this.config.slider?.show_track}"
                data-mode="${this.config.slider?.direction}"
                data-background="${this.config.slider?.background}"
-               data-is-toggle="${this.ctrl.hasToggle}"
+               data-disable-sliding="${this.ctrl.disableSliding}"
                @pointerdown=${this.onPointerDown}
                @pointermove=${this.onPointerMove}
                @pointerup=${this.onPointerUp}
           >
-            ${this.ctrl.hasToggle
-              ? html`
-                <div class="toggle-overlay" @click=${this.handleClick}></div>
-                `
-              : ''}
+
+                <div class="toggle-overlay" @action=${ (e): void => this._handleAction(e, this.config.slider)}
+           .actionHandler=${actionHandler({
+             hasHold: false,
+             hasDoubleClick: false,
+           })}
+           ></div>
+
             <div class="slider-bg"></div>
             <div class="slider-thumb"></div>           
           </div>
@@ -180,7 +183,7 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
   }
 
   private renderText(): TemplateResult {
-    if (!this.config.show_name && !this.config.show_state) {
+    if (!this.config.show_name && !this.config.show_state && !this.config.show_attribute) {
       return html``;
     }
     return html`
@@ -189,19 +192,33 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
               ? html`
                 <div class="name">${this.ctrl.name}</div>
                 `
-                : ''}
-            ${this.config.show_state
-              ? html`
-                <div class="state">
-                  ${this.ctrl.isUnavailable
-                  ? html`
-                    ${this.hass.localize('state.default.unavailable')}
-                    ` : html`
-                    ${this.ctrl.label}
-                  `}
-                </div>
+              : ''}
+
+              <span class="oneliner">
+              ${this.config.show_state
+                ? html`
+                  <span class="state">
+                    ${this.ctrl.isUnavailable
+                    ? html`
+                      ${this.hass.localize('state.default.unavailable')}
+                      ` : html`
+                      ${this.ctrl.label}
+                    `}
+                  </span>
+                  `
+                  : ''}
+
+              ${this.config.show_attribute
+                ? html`
+                  <span class="attribute">
+                  ${this.config.show_state && this.ctrl.attributeLabel
+                    ? html `  ·  `
+                    : ''}
+                ${this.ctrl.attributeLabel}
+                  </span>
                 `
                 : ''}
+              </span>
           </div>
     `;
   }
@@ -287,13 +304,13 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
   }
 
   private async handleClick(ev: Event): Promise<void> {
-    if (this.ctrl.hasToggle && !this.ctrl.isUnavailable) {
+    //if (this.ctrl.hasToggle && !this.ctrl.isUnavailable) {
       ev.preventDefault();
       this.animateActionStart();
       this.ctrl.log('Toggle');
       await toggleEntity(this.hass, this.config.entity);
       // this.setStateValue(this.ctrl.toggleValue);
-    }
+    //}
   }
 
   private _toggle(): void {
@@ -385,6 +402,13 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
       return;
     }
     this.slider.setPointerCapture(event.pointerId);
+
+    let oldPercentage;
+    if (this.ctrl.originalValueLock != true) {
+      this.ctrl.originalValue = this.ctrl.value;
+      this.ctrl.originalValueLock = true;
+    }
+    oldPercentage = this.ctrl.originalValue;
   }
 
   private onPointerUp(event: PointerEvent): void {
@@ -393,6 +417,8 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
     }
     this.setStateValue(this.ctrl.targetValue);
     this.slider.releasePointerCapture(event.pointerId);
+    this.ctrl.originalValueLock = false;
+    this.ctrl.clickPositionLock = false;
   }
 
   private onPointerMove(event: any): void {
@@ -401,9 +427,29 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
     }
     if (!this.slider.hasPointerCapture(event.pointerId)) return;
     const {left, top, width, height} = this.slider.getBoundingClientRect();
+    this.ctrl.log('event', event);
+
     const percentage = this.ctrl.moveSlider(event, {left, top, width, height});
+
+    let clickPosition;
+    if (this.ctrl.clickPositionLock != true)
+    {
+      this.ctrl.clickPosition = percentage;
+      this.ctrl.clickPositionLock = true;
+    }
+    clickPosition = this.ctrl.clickPosition;
+
+    let delta = this.ctrl.clickPosition - percentage;
+    let newPercentage = this.ctrl.originalValue - delta;
+    newPercentage = normalize(newPercentage, this.ctrl.min, this.ctrl.max)
+
+    this.ctrl.log('oldPercentage', this.ctrl.originalValue);
+    this.ctrl.log('clickPosition', this.ctrl.clickPosition);
     this.ctrl.log('onPointerMove', percentage);
-    this.updateValue(percentage);
+    this.ctrl.log('delta', delta);
+    this.ctrl.log('newPercentage', newPercentage)
+
+    this.updateValue(newPercentage);
   }
 
   connectedCallback(): void {
@@ -543,11 +589,12 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
     /* --- LABEL --- */
     
     .name {
-      color: var(--label-color-on, var(--primary-text-color, white));      
+      color: var(--label-color-on, var(--primary-text-color, white));
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
       text-shadow: var(--label-text-shadow, none);
+      font-weight: 500;
     }
     .off .name {
       color: var(--label-color-off, var(--primary-text-color, white));
@@ -564,7 +611,7 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
     /* --- STATE --- */
     
     .state {      
-      color: var(--state-color-on, var(--label-badge-text-color, white));      
+      color: var(--state-color-on, var(--label-badge-text-color, white));
       text-overflow: ellipsis;
       white-space: nowrap;
       text-shadow: var(--state-text-shadow);
@@ -585,7 +632,32 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
       overflow: hidden;
     }
     
-    
+    /* --- ATTRIBUTE --- */
+
+    .attribute {      
+      /*
+      color: var(--state-color-on, var(--label-badge-text-color, white));
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      text-shadow: var(--state-text-shadow);
+      max-width: calc(50% -2em);
+      transition: font-size 0.1s ease-in-out;
+      border: 1px solid red; 
+      */
+    }
+
+    .oneliner {      
+      color: var(--state-color-on, var(--label-badge-text-color, white));
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      max-width:  20px;
+      width: 20px;
+      text-shadow: var(--state-text-shadow);
+      transition: font-size 0.1s ease-in-out;
+      /*border: 1px solid blue;*/
+    }
     /* --- SLIDER --- */    
     
     .slider {
@@ -731,7 +803,7 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
       opacity: 1;            
     }
     .slider[data-show-track="true"] .slider-thumb:after {
-      opacity: 0.9;
+      opacity: 0.675;
     }
     .off .slider[data-show-track="true"] .slider-thumb:after {
       opacity: 1;

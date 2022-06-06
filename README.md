@@ -4,6 +4,17 @@
 
 A button card with integrated slider for `light, switch, fan, cover, input_boolean, media_player, climate, lock` entities.
 
+Fork maintained by [@lizsugar](https://www.github.com/lizsugar) and has the following modifications:
+
+- Automation entities supported
+- Slider moves based on relative position, not absolute
+- Option to show attribute
+
+Also includes fan speed modifications from [@rohankapoorcom](https://github.com/rohankapoorcom).
+
+## TODO:
+- [ ] Add a tap action on the card independent of slider enabled/disabled
+
 ![Preview][preview]
 ![Preview 2][preview-2]
 
