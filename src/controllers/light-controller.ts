@@ -210,7 +210,7 @@ export class LightController extends Controller {
     if (supported.length === 1 && supported[0] === LightAttributes.ON_OFF) {
       return true;
     }
-    return this._config.slider?.toggle_on_click ?? false;
+    return this._config.slider?.disable_sliding ?? false;
   }
 
   get hasSlider(): boolean {

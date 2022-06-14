@@ -99,8 +99,8 @@ export abstract class Controller {
     return true;
   }
 
-  get hasToggle(): boolean {
-    return this._config.slider?.toggle_on_click ?? false;
+  get disableSliding(): boolean {
+    return this._config.slider?.disable_sliding ?? false;
   }
 
   get toggleValue(): number {
@@ -120,7 +120,7 @@ export abstract class Controller {
   }
 
   get isSliderDisabled(): boolean {
-    return this.isUnavailable ? this.isUnavailable : this.hasToggle;
+    return this.isUnavailable ? this.isUnavailable : this.disableSliding;
   }
 
   get min(): number {

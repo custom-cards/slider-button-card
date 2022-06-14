@@ -222,10 +222,10 @@ export class SliderButtonCardEditor extends LitElement implements LovelaceCardEd
                     @change=${this._valueChanged}
                   ></ha-switch>
                 </ha-formfield>
-                <ha-formfield .label=${localize('tabs.slider.toggle_on_click')}>
+                <ha-formfield .label=${localize('tabs.slider.disable_sliding')}>
                   <ha-switch
-                    .checked=${this._slider.toggle_on_click}
-                    .configValue=${'slider.toggle_on_click'}
+                    .checked=${this._slider.disable_sliding}
+                    .configValue=${'slider.disable_sliding'}
                     @change=${this._valueChanged}
                   ></ha-switch>
                 </ha-formfield>
