@@ -180,7 +180,7 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
   }
 
   private renderText(): TemplateResult {
-    if (!this.config.show_name && !this.config.show_state) {
+    if (!this.config.show_name && !this.config.show_state && !this.config.show_attribute) {
       return html``;
     }
     return html`
@@ -189,19 +189,33 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
               ? html`
                 <div class="name">${this.ctrl.name}</div>
                 `
-                : ''}
-            ${this.config.show_state
-              ? html`
-                <div class="state">
-                  ${this.ctrl.isUnavailable
-                  ? html`
-                    ${this.hass.localize('state.default.unavailable')}
-                    ` : html`
-                    ${this.ctrl.label}
-                  `}
-                </div>
+              : ''}
+
+              <span class="oneliner">
+              ${this.config.show_state
+                ? html`
+                  <span class="state">
+                    ${this.ctrl.isUnavailable
+                    ? html`
+                      ${this.hass.localize('state.default.unavailable')}
+                      ` : html`
+                      ${this.ctrl.label}
+                    `}
+                  </span>
+                  `
+                  : ''}
+
+              ${this.config.show_attribute
+                ? html`
+                  <span class="attribute">
+                  ${this.config.show_state && this.ctrl.attributeLabel
+                    ? html `  ·  `
+                    : ''}
+                ${this.ctrl.attributeLabel}
+                  </span>
                 `
                 : ''}
+              </span>
           </div>
     `;
   }
@@ -420,7 +434,7 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
       box-sizing: border-box;
       height: 100%;
       width: 100%;
-      min-height: 7rem;
+      min-height: 6.25rem;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -465,7 +479,7 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
       padding: 0.8rem;
       box-sizing: border-box;
       height: 100%;
-      min-height: 7rem;
+      min-height: 6.25rem;
       width: 100%;
       display: block;
       overflow: hidden;           
@@ -482,7 +496,7 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
     /* --- ICON --- */
     
     .icon {
-      position: relative;
+      position: absolute;
       cursor: pointer;
       width: var(--mdc-icon-size, 24px);
       height: var(--mdc-icon-size, 24px);
@@ -491,6 +505,7 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
       outline: none;
       animation: var(--icon-rotate-speed, 0s) linear 0s infinite normal both running rotate;
       -webkit-tap-highlight-color: transparent;
+      bottom: 26px;
     }
     .icon ha-icon {
       filter: var(--icon-filter, brightness(100%));
@@ -515,8 +530,8 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
     
     .text {
       position: absolute;
-      bottom: 0;
-      left: 0;
+      bottom: 12px;
+      left: 36px;
       padding: 0.8rem;
       pointer-events: none;
       user-select: none;
@@ -543,11 +558,12 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
     /* --- LABEL --- */
     
     .name {
-      color: var(--label-color-on, var(--primary-text-color, white));      
+      color: var(--label-color-on, var(--primary-text-color, white));
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
       text-shadow: var(--label-text-shadow, none);
+      font-weight: 500;
     }
     .off .name {
       color: var(--label-color-off, var(--primary-text-color, white));
@@ -564,7 +580,7 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
     /* --- STATE --- */
     
     .state {      
-      color: var(--state-color-on, var(--label-badge-text-color, white));      
+      color: var(--state-color-on, var(--label-badge-text-color, white));
       text-overflow: ellipsis;
       white-space: nowrap;
       text-shadow: var(--state-text-shadow);
@@ -585,7 +601,32 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
       overflow: hidden;
     }
     
-    
+    /* --- ATTRIBUTE --- */
+
+    .attribute {      
+      /*
+      color: var(--state-color-on, var(--label-badge-text-color, white));
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      text-shadow: var(--state-text-shadow);
+      max-width: calc(50% -2em);
+      transition: font-size 0.1s ease-in-out;
+      border: 1px solid red; 
+      */
+    }
+
+    .oneliner {      
+      color: var(--state-color-on, var(--label-badge-text-color, white));
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      max-width:  20px;
+      width: 20px;
+      text-shadow: var(--state-text-shadow);
+      transition: font-size 0.1s ease-in-out;
+      /*border: 1px solid blue;*/
+    }
     /* --- SLIDER --- */    
     
     .slider {
@@ -731,7 +772,7 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
       opacity: 1;            
     }
     .slider[data-show-track="true"] .slider-thumb:after {
-      opacity: 0.9;
+      opacity: 0.675;
     }
     .off .slider[data-show-track="true"] .slider-thumb:after {
       opacity: 1;
@@ -740,7 +781,9 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
     /* --- ACTION BUTTON --- */      
               
     .action {
-      position: relative;
+      position: absolute;
+      right: 10px;
+      bottom: 28px;
       float: right;
       width: var(--mdc-icon-size, 24px);
       height: var(--mdc-icon-size, 24px);
