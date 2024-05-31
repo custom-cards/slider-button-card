@@ -42,7 +42,7 @@ export class ClimateController extends Controller {
     const unit = this._hass.config.unit_system.temperature;
     const mode = capitalizeFirst(this.state);
     // const current = this.stateObj.attributes?.current_temperature ? ` | ${this.stateObj.attributes.current_temperature}${unit}` : '';
-    return `${this.targetValue}${unit} | ${mode}`;
+    return `${this.targetValue.toFixed(1)}${unit} | ${mode}`;
   }
 
 }
