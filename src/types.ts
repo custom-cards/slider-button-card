@@ -8,11 +8,18 @@ declare global {
   }
 }
 
+/** A `name` option: a plain string, or name parts resolved from the registry. */
+export type EntityName = string | EntityNameItem | EntityNameItem[];
+
+export type EntityNameItem =
+  | { type: 'entity' | 'device' | 'area' | 'floor' }
+  | { type: 'text'; text: string };
+
 export interface SliderButtonCardConfig extends LovelaceCardConfig {
   type: string;
   entity: string;
   attribute?: string;
-  name?: string;
+  name?: EntityName;
   show_name?: boolean;
   show_state?: boolean;
   show_attribute?: boolean;

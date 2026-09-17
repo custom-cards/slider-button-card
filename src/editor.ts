@@ -17,7 +17,8 @@ import { textfieldDefinition } from '../elements/textfield';
 import { ScopedRegistryHost } from '@lit-labs/scoped-registry-mixin';
 import { ActionConfig, HomeAssistant, LovelaceCardEditor, computeDomain, fireEvent } from 'custom-card-helpers';
 import { localize } from './localize/localize';
-import { ActionButtonConfig, ActionButtonConfigDefault, ActionButtonMode, Domain, IconConfig, IconConfigDefault, SliderBackground, SliderButtonCardConfig, SliderConfig, SliderConfigDefault, SliderDirections } from './types';
+import { ActionButtonConfig, ActionButtonConfigDefault, ActionButtonMode, Domain, EntityName, IconConfig, IconConfigDefault, SliderBackground, SliderButtonCardConfig, SliderConfig, SliderConfigDefault, SliderDirections } from './types';
+import { supportsEntityNameSelector } from './entity-name';
 import { applyPatch, getEnumValues, getSliderDefaultForEntity } from './utils';
 
 @customElement('slider-button-card-editor')
@@ -70,7 +71,7 @@ export class SliderButtonCardEditor extends ScopedRegistryHost(LitElement) imple
     return true;
   }
 
-  get _name(): string {
+  get _name(): EntityName {
     return this._config?.name || '';
   }
 
@@ -167,13 +168,27 @@ export class SliderButtonCardEditor extends ScopedRegistryHost(LitElement) imple
                 @change=${this._valueChangedEntity}
               ></ha-entity-picker>
               
-              <mwc-textfield
-                label="${localize('tabs.general.name')}"
-                .value=${this._name}
-                .placeholder=${this._name || this.hass.states[this._entity]?.attributes?.friendly_name}
-                .configValue=${'name'}
-                @input=${this._valueChanged}
-              ></mwc-textfield>
+              ${supportsEntityNameSelector(this.hass)
+                ? html`
+                    <ha-selector
+                      .hass=${this.hass}
+                      .selector=${{ entity_name: {} }}
+                      .context=${{ entity: this._entity }}
+                      .label="${localize('tabs.general.name')}"
+                      .value=${this._name || undefined}
+                      .configValue=${'name'}
+                      @value-changed=${this._valueChangedName}
+                    ></ha-selector>
+                  `
+                : html`
+                    <mwc-textfield
+                      label="${localize('tabs.general.name')}"
+                      .value=${typeof this._name === 'string' ? this._name : ''}
+                      .placeholder=${this.hass.states[this._entity]?.attributes?.friendly_name}
+                      .configValue=${'name'}
+                      @input=${this._valueChanged}
+                    ></mwc-textfield>
+                  `}
               ${this._renderOptionSelector(`attribute`, this._entityAttributes, localize('tabs.general.attribute'), this._attribute)}
               <div class="side-by-side">
                 <mwc-formfield .label=${localize('tabs.general.show_name')}>
@@ -392,6 +407,14 @@ export class SliderButtonCardEditor extends ScopedRegistryHost(LitElement) imple
     if (this.hass === undefined) return;
     if (this._config === undefined) return;
     this._initialized = true;
+  }
+
+  // ha-selector reports through ev.detail rather than target.value, and an
+  // empty name has to clear the option rather than store an empty string.
+  private _valueChangedName(ev): void {
+    ev.stopPropagation();
+    const value = ev.detail?.value;
+    this._changeValue('name', value === undefined || value === null ? '' : value);
   }
 
   private _valueChangedSelect(ev): void {

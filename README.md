@@ -72,7 +72,7 @@ Slider Button Card supports Lovelace's Visual Editor.
 | ----------------- | ------- | ------------ | ------------------------------------------- | ------------------- |
 | type              | string  | **Required** | `custom:slider-button-card`                   |
 | entity            | string  | **Required** | HA entity ID from domain `automation, light, switch, fan, cover, input_boolean, input_number, media_player, number climate, lock`                   |               |
-| name              | string  | **Optional** | Name                                   | `entity.friendly_name`       |
+| name              | string / list | **Optional** | Name. Accepts a [structured name](#structured-names) on Home Assistant 2026.4 and later. | entity name |
 | show_attribute        | boolean | **Optional** | Show attribute  | `false` (except for `media_player` entities)            |
 | show_name        | boolean | **Optional** | Show name  | `true`             |
 | show_state        | boolean | **Optional** | Show state  | `true`             |
@@ -160,6 +160,30 @@ Custom styles can be set by using [Card mod](https://github.com/thomasloven/love
 |  `--action-icon-color-on`  | Color of the action button icon when state is on     | `var(--paper-item-icon-color, black)`       |
 |  `--action-icon-color-off`  | Color of the action button icon when state is off     | `var(--paper-item-icon-color, black)`       |
 |  `--action-spinner-color`  | Color of the spinner action button     | `var(--label-badge-text-color, white)`       |
+
+### Structured names
+
+*Requires Home Assistant 2026.4 or later. On earlier versions a structured `name` falls back to the entity's friendly name.*
+
+Home Assistant composes an entity's display name out of its registry context
+(entity, device, area, floor) rather than one `friendly_name` string. `name` can
+be a list of those parts instead of a plain string, so it keeps following renames
+and matches what the built-in cards show:
+
+```yaml
+type: custom:slider-button-card
+entity: light.kitchen_ceiling
+name:
+  - type: area
+  - type: entity
+```
+
+Available part types are `entity`, `device`, `area`, `floor`, and
+`text` (a literal, written as `{type: text, text: Ceiling}`). Parts that resolve to
+nothing are dropped. A plain string `name` keeps working exactly as before, and the
+visual editor offers both modes on Home Assistant 2025.11 and later.
+
+See the [Home Assistant developer documentation](https://developers.home-assistant.io/docs/frontend/data#hassformatentitynamestateobj-name-options) for details.
 
 ## Examples
 

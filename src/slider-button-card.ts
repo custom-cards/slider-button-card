@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ActionHandlerEvent, applyThemesOnElement, computeStateDomain, handleAction, hasConfigOrEntityChanged, HomeAssistant, LovelaceCard, LovelaceCardEditor, STATES_OFF, toggleEntity } from 'custom-card-helpers';
 import copy from 'fast-copy';
+import { entityNamesChanged } from './entity-name';
 import { css, CSSResult, customElement, eventOptions, html, LitElement, property, PropertyValues, query, state, TemplateResult } from 'lit-element';
 import { classMap } from 'lit-html/directives/class-map';
 import { ifDefined } from 'lit-html/directives/if-defined';
@@ -108,6 +109,12 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
       oldHass.language !== this.hass.language
     ) {
       this.ctrl.log('shouldUpdate', 'forced true');
+      return true;
+    }
+    // The name resolves against the entity/device/area/floor registries, and HA
+    // swaps the real formatEntityName in asynchronously once translations load.
+    // Neither changes an entity state, so hasConfigOrEntityChanged misses both.
+    if (entityNamesChanged(oldHass, this.hass)) {
       return true;
     }
     return hasConfigOrEntityChanged(this, changedProps, false);
