@@ -143,7 +143,7 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
       <ha-card
         tabindex="0"
         .label=${`SliderButton: ${this.config.entity || 'No Entity Defined'}`}
-        class="${classMap({ 'square': this.config.slider?.force_square || false, 'hide-name': !this.config.show_name, 'hide-state': !this.config.show_state, 'hide-action': !this.config.action_button?.show , 'compact': this.config.compact === true })}"
+        class="${classMap({ 'square': this.config.slider?.force_square || false, 'hide-name': !this.config.show_name, 'hide-state': !this.config.show_state, 'hide-action': !this.config.action_button?.show , 'compact': this.config.compact === true, 'name-only': !this.config.show_state && !this.config.show_attribute && this.config.action_button?.show === false })}"
         data-mode="${this.config.slider?.direction}"
       >
         <div class="button
@@ -612,6 +612,9 @@ export class SliderButtonCard extends LitElement implements LovelaceCard {
       display: inline-block;   
       max-width: calc(100% - 3.5em);
     }    
+    .compact.name-only .name {
+      max-width: 100%;
+    }
     
     /* --- STATE --- */
     
